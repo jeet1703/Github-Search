@@ -1,0 +1,6 @@
+target/
+.idea/
+*.iml
+
+# Assignment brief, not part of the project
+GitHub Repository Searcher.pdf

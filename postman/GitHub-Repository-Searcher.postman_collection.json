@@ -1,0 +1,465 @@
+{
+  "info": {
+    "name": "GitHub Repository Searcher",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the requests in order: the searches populate the database used by the retrieve requests."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Search GitHub",
+      "item": [
+        {
+          "name": "Search (query + language + sort)",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "search"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"spring boot\",\n  \"language\": \"Java\",\n  \"sort\": \"stars\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('repositories saved', () => pm.expect(pm.response.json().repositories).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search sorted by forks",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "search"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"react\",\n  \"language\": \"JavaScript\",\n  \"sort\": \"forks\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search sorted by updated, no language",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "search"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"tetris\",\n  \"sort\": \"updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search with no results",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "search"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"zzqqxxnotarepo12345zz\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('empty', () => pm.expect(pm.response.json().message).to.eql('No repositories found'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid: blank query and bad sort",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "search"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"\",\n  \"sort\": \"name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Retrieve stored repositories",
+      "item": [
+        {
+          "name": "All (default sort: stars)",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Java, min 100 stars, by stars",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories?language=Java&minStars=100&sort=stars",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "Java"
+                },
+                {
+                  "key": "minStars",
+                  "value": "100"
+                },
+                {
+                  "key": "sort",
+                  "value": "stars"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sorted by forks",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories?sort=forks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "forks"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sorted by updated",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories?sort=updated",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "updated"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid: negative minStars",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories?minStars=-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ],
+              "query": [
+                {
+                  "key": "minStars",
+                  "value": "-1"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid: unknown sort",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/github/repositories?sort=name",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "github",
+                "repositories"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "name"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status is 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
